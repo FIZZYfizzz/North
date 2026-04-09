@@ -1,0 +1,239 @@
+// North – Kanban Board
+// Prisma Schema v1
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workspaceMembers WorkspaceMember[]
+  invitesSent      Invite[]          @relation("InvitedBy")
+  cardAssignments  CardAssignee[]
+  activities       Activity[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKSPACES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members WorkspaceMember[]
+  boards  Board[]
+  invites Invite[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id       String        @id @default(cuid())
+  role     WorkspaceRole @default(MEMBER)
+  joinedAt DateTime      @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INVITES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Invite {
+  id          String        @id @default(cuid())
+  email       String
+  token       String        @unique
+  role        WorkspaceRole @default(MEMBER)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime      @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  invitedById String
+  invitedBy   User   @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([token])
+  @@map("invites")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOARDS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Board {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  coverColor  String?  // e.g. "#7C6AF7" — used as a subtle visual identifier
+  isArchived  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  columns    Column[]
+  activities Activity[]
+
+  @@index([workspaceId])
+  @@map("boards")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COLUMNS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Column {
+  id        String   @id @default(cuid())
+  name      String
+  // Float position enables O(1) reordering via midpoint algorithm.
+  // New columns get position = max + 1000. Reordering sets position = (prev + next) / 2.
+  // Renormalize (integers) only when gap < 1.
+  position  Float
+  color     String?  // optional column-level accent color
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  cards Card[]
+
+  @@index([boardId])
+  @@map("columns")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CARDS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Card {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  // Same float-position strategy as Column
+  position    Float
+  priority    Priority  @default(NONE)
+  dueDate     DateTime?
+  isArchived  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  columnId String
+  column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  assignees  CardAssignee[]
+  activities Activity[]
+
+  @@index([columnId])
+  @@map("cards")
+}
+
+enum Priority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model CardAssignee {
+  assignedAt DateTime @default(now())
+
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, userId])
+  @@map("card_assignees")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIVITY LOG
+// Flexible event store for both audit trails and real-time feeds.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Activity {
+  id        String       @id @default(cuid())
+  type      ActivityType
+  // JSON payload holds event-specific data (e.g. { from: 'Todo', to: 'In Progress' })
+  payload   Json?
+  createdAt DateTime     @default(now())
+
+  userId  String?
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  cardId  String?
+  card    Card?   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([cardId])
+  @@map("activities")
+}
+
+enum ActivityType {
+  // Board
+  BOARD_CREATED
+  BOARD_UPDATED
+  BOARD_ARCHIVED
+  // Column
+  COLUMN_CREATED
+  COLUMN_RENAMED
+  COLUMN_MOVED
+  COLUMN_DELETED
+  // Card
+  CARD_CREATED
+  CARD_UPDATED
+  CARD_MOVED
+  CARD_PRIORITY_CHANGED
+  CARD_ASSIGNED
+  CARD_UNASSIGNED
+  CARD_ARCHIVED
+  // Members
+  MEMBER_JOINED
+  MEMBER_LEFT
+  MEMBER_ROLE_CHANGED
+}

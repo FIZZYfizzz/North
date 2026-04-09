@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+/*
+ * ─── Design System ────────────────────────────────────────────────────────────
+ *
+ * North uses a Tailwind v4 @theme block for all design tokens.
+ * Dark mode is handled by the .dark class on <html>.
+ * All colors are CSS custom properties to allow seamless theme switching.
+ */
+
+@theme {
+  /* ─── Typography ─────────────────────────────────────────────────────────── */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ─── Border Radius ──────────────────────────────────────────────────────── */
+  --radius-card: 0.75rem;   /* 12px – cards */
+  --radius-panel: 1rem;     /* 16px – columns, panels */
+  --radius-dialog: 1.25rem; /* 20px – modals */
+
+  /* ─── Transitions ────────────────────────────────────────────────────────── */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-quick: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* ─── Priority Colors ─────────────────────────────────────────────────────
+   * These are the only bold colors in the UI.
+   * Used as subtle left-border accents on cards.
+   */
+  --color-priority-none:   #d1d5db; /* gray-300   */
+  --color-priority-low:    #86efac; /* green-300  */
+  --color-priority-medium: #fde68a; /* amber-200  */
+  --color-priority-high:   #f97316; /* orange-500 */
+  --color-priority-urgent: #ef4444; /* red-500    */
+
+  /* ─── Brand ──────────────────────────────────────────────────────────────── */
+  --color-brand: #7c6af7;
+  --color-brand-hover: #6b5ce6;
+}
+
+/* ─── Themes ──────────────────────────────────────────────────────────────────
+ * Each theme is a self-contained preset applied via data-theme="<name>" on <html>.
+ * :root serves as the Light theme fallback (no attribute needed).
+ */
+
+/* Light — warm off-white, violet accent */
+:root,
+[data-theme="light"] {
+  --bg-base:        #f9f9f8;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #ffffff;
+  --bg-subtle:      #f3f3f1;
+  --bg-column:      #f0f0ee;
+  --bg-card:        #ffffff;
+
+  --text-primary:   #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-tertiary:  #9b9b9b;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #e8e8e6;
+  --border-medium:  #d4d4d2;
+
+  --shadow-card:    0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
+  --shadow-panel:   0 4px 16px 0 rgba(0,0,0,0.06);
+  --shadow-dialog:  0 20px 60px 0 rgba(0,0,0,0.12);
+
+  --color-brand:       #7c6af7;
+  --color-brand-hover: #6b5ce6;
+}
+
+/* Dark — warm charcoal, violet accent */
+[data-theme="dark"] {
+  --bg-base:        #111110;
+  --bg-surface:     transparent;
+  --bg-elevated:    #1f1f1e;
+  --bg-subtle:      #222221;
+  --bg-column:      #1a1a19;
+  --bg-card:        #242423;
+
+  --text-primary:   #ebebeb;
+  --text-secondary: #a0a0a0;
+  --text-tertiary:  #686868;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #2a2a28;
+  --border-medium:  #363634;
+
+  --shadow-card:    0 1px 4px 0 rgba(0,0,0,0.3);
+  --shadow-panel:   0 4px 20px 0 rgba(0,0,0,0.4);
+  --shadow-dialog:  0 24px 64px 0 rgba(0,0,0,0.6);
+
+  --color-brand:       #7c6af7;
+  --color-brand-hover: #6b5ce6;
+}
+
+/* Blue — calm, trustworthy, Linear-adjacent */
+[data-theme="blue"] {
+  --bg-base:        #0f1117;
+  --bg-surface:     transparent;
+  --bg-elevated:    #1a1d24;
+  --bg-subtle:      #1e2129;
+  --bg-column:      #171b22;
+  --bg-card:        #222730;
+
+  --text-primary:   #e4e8f0;
+  --text-secondary: #8a94a6;
+  --text-tertiary:  #5a6275;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #252b36;
+  --border-medium:  #313c4a;
+
+  --shadow-card:    0 1px 4px 0 rgba(0,0,0,0.4);
+  --shadow-panel:   0 4px 20px 0 rgba(0,0,0,0.5);
+  --shadow-dialog:  0 24px 64px 0 rgba(0,0,0,0.7);
+
+  --color-brand:       #5b8dd9;
+  --color-brand-hover: #4a7bc8;
+}
+
+/* Violet — soft lavender, startup energy, futuristic */
+[data-theme="violet"] {
+  --bg-base:        #111018;
+  --bg-surface:     transparent;
+  --bg-elevated:    #1c1b28;
+  --bg-subtle:      #201f2e;
+  --bg-column:      #181724;
+  --bg-card:        #252434;
+
+  --text-primary:   #eae8f5;
+  --text-secondary: #8e8aaa;
+  --text-tertiary:  #5e5a78;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #28273a;
+  --border-medium:  #36344c;
+
+  --shadow-card:    0 1px 4px 0 rgba(0,0,0,0.4);
+  --shadow-panel:   0 4px 20px 0 rgba(0,0,0,0.5);
+  --shadow-dialog:  0 24px 64px 0 rgba(0,0,0,0.7);
+
+  --color-brand:       #9d87fa;
+  --color-brand-hover: #8c74f0;
+}
+
+/* Sage — grounded, strategic, sustainable */
+[data-theme="sage"] {
+  --bg-base:        #0f1210;
+  --bg-surface:     transparent;
+  --bg-elevated:    #191e1a;
+  --bg-subtle:      #1e241f;
+  --bg-column:      #161b17;
+  --bg-card:        #232924;
+
+  --text-primary:   #e4ede6;
+  --text-secondary: #88a08c;
+  --text-tertiary:  #586860;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #252e27;
+  --border-medium:  #313d34;
+
+  --shadow-card:    0 1px 4px 0 rgba(0,0,0,0.4);
+  --shadow-panel:   0 4px 20px 0 rgba(0,0,0,0.5);
+  --shadow-dialog:  0 24px 64px 0 rgba(0,0,0,0.7);
+
+  --color-brand:       #5a9e78;
+  --color-brand-hover: #4a8e68;
+}
+
+/* Sand — minimalist, warm, design-forward */
+[data-theme="sand"] {
+  --bg-base:        #f6f3ee;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #ffffff;
+  --bg-subtle:      #ede9e2;
+  --bg-column:      #e8e3da;
+  --bg-card:        #ffffff;
+
+  --text-primary:   #2a2118;
+  --text-secondary: #7a6e5c;
+  --text-tertiary:  #a09484;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #ddd8cf;
+  --border-medium:  #cdc6ba;
+
+  --shadow-card:    0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.05);
+  --shadow-panel:   0 4px 16px 0 rgba(0,0,0,0.08);
+  --shadow-dialog:  0 20px 60px 0 rgba(0,0,0,0.14);
+
+  --color-brand:       #8a6840;
+  --color-brand-hover: #7a5830;
+}
+
+/* Mocha — warm editorial, premium, composed */
+[data-theme="mocha"] {
+  --bg-base:        #0d0c0b;
+  --bg-surface:     transparent;
+  --bg-elevated:    #1c1917;
+  --bg-subtle:      #211e1b;
+  --bg-column:      #181512;
+  --bg-card:        #252220;
+
+  --text-primary:   #ede8e3;
+  --text-secondary: #a0917f;
+  --text-tertiary:  #6a5c4e;
+  --text-on-brand:  #ffffff;
+
+  --border-subtle:  #2c2722;
+  --border-medium:  #3a342e;
+
+  --shadow-card:    0 1px 4px 0 rgba(0,0,0,0.4);
+  --shadow-panel:   0 4px 20px 0 rgba(0,0,0,0.5);
+  --shadow-dialog:  0 24px 64px 0 rgba(0,0,0,0.7);
+
+  --color-brand:       #a67c6a;
+  --color-brand-hover: #8f6b5a;
+}
+
+/* ─── Global Reset Additions ─────────────────────────────────────────────────*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────────────*/
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ─── Focus ring ─────────────────────────────────────────────────────────────*/
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Drag-and-drop ghost styles ─────────────────────────────────────────────*/
+
+.dragging {
+  opacity: 0.5;
+  transform: rotate(1.5deg);
+}
+
+.drag-over {
+  background-color: var(--bg-subtle);
+}
